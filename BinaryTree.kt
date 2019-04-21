@@ -1,6 +1,6 @@
 class BinaryTree(var root: BinaryTreeElement) {
     fun isEmpty(): Boolean {                    //Проверяет, есть ли элементы в дереве, или же оно пустое
-        return root == null
+        return this.root.element == null
     }
 
     fun isNotEmpty(): Boolean {
@@ -9,12 +9,15 @@ class BinaryTree(var root: BinaryTreeElement) {
 
     fun plantTheTree(n: Int) = BinaryTree(BinaryTreeElement(n, null, null))       //Создаем дерево
 
-    private fun compare(a: BinaryTreeElement, b: Int): Int {    //Сравнивает узел дерева и целое число
-        return when {
-            a.element > b -> 1
-            a.element < b -> -1
-            else -> 0
+    private fun compare(a: BinaryTreeElement, b: Int?): Int {    //Сравнивает узел дерева и целое число
+        return if (b != null) {
+            when {
+                a.element > b -> 1
+                a.element < b -> -1
+                else -> 0
+            }
         }
+        else 2
     }
 
     private fun toTheLeftChild(a: BinaryTreeElement) =
@@ -23,41 +26,51 @@ class BinaryTree(var root: BinaryTreeElement) {
     private fun toTheRightChild(a: BinaryTreeElement) =
             BinaryTreeElement(a.rightChild!!.element, a.rightChild?.leftChild, a.rightChild?.rightChild)   //Переходим к правому потомку узла
 
-    fun add(element: Int): Any {
-        if (this.isEmpty()) return BinaryTreeElement(element, null, null)
+    fun add(element: Int): Unit {
+        if (this.isEmpty()) BinaryTreeElement(element, null, null)
         var a = BinaryTreeElement(this.root.element, this.root.leftChild, this.root.rightChild)
         println(a.element)
         while ((compare(a, element) != 1 && a.leftChild != null) ||       //Пока не сможем вставить число налево
                 (compare(a, element) != -1 && a.rightChild != null) ||    //направо
-                compare(a, element) != 0) {                               //или не обнаружим, что такое число уже есть
+                compare(a, element) != 0 || compare(a, element) != 2) {                               //или не обнаружим, что такое число уже есть
             when {
                 compare(a, element) == 1 -> {                             //Переходим к левому элементу
-                    a = toTheLeftChild(a); println(a.element)
+                    a = toTheLeftChild(a); println(this)
                 }
-                compare(a, element) == -1 -> {                            //Или к правому
-                    a = toTheRightChild(a); println(a.element)
+                compare(a, element) == -1 -> {                       //Или к правому
+                    a = toTheRightChild(a); println(this)
                 }
-                else -> a                                                 //Просто для else, такого не будет
+                else -> a = a
+                }
             }
-        }
         when {
             compare(a, element) == 1 && a.leftChild == null -> {
-                a.leftChild = BinaryTreeElement(element, null, null); return "Добавлено"  //Добавляем элемент
+                a.leftChild = BinaryTreeElement(element, null, null)  //Добавляем элемент
             }
             compare(a, element) == -1 && a.rightChild == null -> {
-                a.rightChild = BinaryTreeElement(element, null, null); return "Добавлено"
+                a.rightChild = BinaryTreeElement(element, null, null)
             }
             else -> {
-                println("Такое число уже есть в дереве"); return "Уже есть"
+                println("Такое число уже есть в дереве")
             }
         }
     }
 
 
-    fun hasAlready(x: Int): Boolean = add(x) == "Уже есть"
+    fun hasAlready(x: Int): Boolean {
+        while (compare(this.root, x) != 0) {
+            when {
+                compare(this.root, x) == 1 -> toTheLeftChild(this.root)
+                compare(this.root, x) == -1 -> toTheRightChild(this.root)
+            }
+        }
+        return compare(this.root, x) == 0
+    }
+
+    fun hasNotAlready(x: Int): Boolean {return x == x}
 
     fun findLeftChild(x: Int): Any? {
-        if (!hasAlready(x)) return "Такого числа нет в дереве"
+        if (hasNotAlready(x)) return "Такого числа нет в дереве"
         else {
             var a = BinaryTreeElement(this.root.element, this.root.leftChild, this.root.rightChild)
             while (compare(a, x) != 0) {
@@ -72,8 +85,6 @@ class BinaryTree(var root: BinaryTreeElement) {
     }
 
     fun findRightChild(x: Int): Any? {
-        if (!hasAlready(x)) return "Такого числа нет в дереве"
-        else {
             var a = BinaryTreeElement(this.root.element, this.root.leftChild, this.root.rightChild)
             while (compare(a, x) != 0) {
                 when {
@@ -84,7 +95,6 @@ class BinaryTree(var root: BinaryTreeElement) {
             }
             return a.rightChild
         }
-    }
 
     fun findParent(x: Int): Any? {
         if (!hasAlready(x)) return "Такого числа нет в дереве"
@@ -101,20 +111,6 @@ class BinaryTree(var root: BinaryTreeElement) {
         return a.element                                                 //Когда нашли искомое число среди потомков,
         }                                                                //выводим родителя
     }
-
-    fun remove(x: Int): Any? {
-        if (!hasAlready(x)) return "Такого числа нет в дереве"
-
-    }
-
-    private fun replaceNodeAndLeftChild(treeElement: BinaryTreeElement) {
-        var t = treeElement.element
-        treeElement.element = treeElement.leftChild!!.element
-        treeElement.leftChild = treeElement.leftChild?.leftChild
-        treeElement.leftChild = treeElement.leftChild?.rightChild
-    }
-
-
 }
 
 
